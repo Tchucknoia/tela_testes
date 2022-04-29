@@ -8,10 +8,10 @@ function conectar() {
     return new Promise((resolve, rejects) =>{
 
         let connection = mysql.createConnection({
-            host: '',
-            user: '',
-            password: '',
-            database: ''
+            host: process.env.host,
+            user: process.env.user,
+            password: process.env.password,
+            database: process.env.database
         });
 
         connection.connect(err => {
