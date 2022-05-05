@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta tags Obrigatórias -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Inicial</title>
-
+    <title>Tela Inicial</title>
     <!-- Bootstrap CSS -->
     <script src="https://code.jquery.com/jquery-3.4.0.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -20,15 +16,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"
+        integrity="sha384-qlmct0AOBiA2VPZkMY3+2WqkHtIQ9lSdAsAn5RUJD/3vA5MKDgSGcdmIv4ycVxyn"
+        crossorigin="anonymous"></script>
 
     <script>
         $(document).ready(() => {
+
             // Example starter JavaScript for disabling form submissions if there are invalid fields
             (function () {
                 'use strict'
 
                 // Fetch all the forms we want to apply custom Bootstrap validation styles to
-                var forms = document.querySelectorAll('.needs-validation')
+                let forms = document.querySelectorAll('.needs-validation')
 
                 // Loop over them and prevent submission
                 Array.prototype.slice.call(forms)
@@ -38,13 +38,97 @@
                                 event.preventDefault()
                                 event.stopPropagation()
                             }
-
                             form.classList.add('was-validated')
                         }, false)
                     })
-            })()
+            })();
+            /*
+            $("#Logout").click(() => {
+                //console.log("Click");
+                let currentLink = $(location).attr("href") + "/logout";
+                currentLink = currentLink.replace("#", "");
+
+                $.post(currentLink);
+            });
+            */
+
+            $("#CadastrarSC").click((event) => {
+                let jDados = {};
+                const form = document.getElementById("FormCadastro");
+                for (const elemento of form.elements) {
+                    if (!elemento.checkValidity()) {
+                        return;
+                    }
+                    jDados[elemento.id] = elemento.value;
+                }
+                event.preventDefault();
+                let currentLink = $(location).attr("href");
+                currentLink = currentLink.replace("#", "").replace("?", "");
+
+                console.log(jDados);
+                $.ajax({
+                    url: currentLink + "/cadastrar",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(jDados)
+                }).done(jRes => {
+                    if (jRes["cMensagemErro"] != null) {
+                        alert(jRes["cMensagemErro"]);
+                    }
+                    console.log(jRes);
+                });
+            });
+            $("#ProcurarSC").click((event) => {
+                event.preventDefault();
+                let jDados = {};
+                const form = document.getElementById("FormCadastro");
+                for (const elemento of form.elements) {
+                    jDados[elemento.id] = elemento.value;
+                }
+                console.log(jDados);
+                let currentLink = $(location).attr("href");
+                currentLink = currentLink.replace("#", "").replace("?", "");
+
+                console.log(jDados);
+                $.ajax({
+                    url: currentLink + "/procurar",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(jDados)
+                }).done(jRes => {
+                    if (jRes["cMensagemErro"] != null) {
+                        alert(jRes["cMensagemErro"]);
+                    }
+                    console.log(jRes);
+                    //console.log(jRes.dados]);
+                    for (const jDados of jRes.dados) {
+                        let divDados = document.getElementById("DivDados");
+                        let card = document.createElement("div");
+                        card.className = "col card cardSCs";
+                        card.innerHTML = `
+                        <div id="Numero_SC" class="card-header"><h5>${jDados["numero_SC"]}</h5></div>
+                        <div class="card-body">
+                        <p id="Setor_SC" class="card-title">${jDados["setor"]}</p>
+                        <p id="Data_SC" class="card-text">${jDados["data"]}</p>
+                        <p id="Descricao_SC" class="card-text">${jDados["descricao"]}</p>
+                        </div>
+                        `;
+                        divDados.appendChild(card);
+                    }
+
+                });
+            });
         });
     </script>
+
+    <style>
+        .cardSCs {
+            min-width: 15rem;
+            min-height: 19rem;
+            max-width: 18rem;
+            max-height: 22rem;
+        }
+    </style>
 </head>
 
 <body>
@@ -74,11 +158,16 @@
             </div>
         </div>
     </nav>
-    <div class="container-fluid" style="margin: 1rem;">
-        <form class="row g-3 needs-validation mb-4" novalidate style="max-width: 30rem;">
+    <div class="container-fluid" style="margin-top: 1rem;">
+        <form id="FormCadastro" class="row g-3 needs-validation mb-4" novalidate style="max-width: 30rem;">
             <div class="col-md-4">
                 <label for="Numero_input" class="form-label">Número da SC</label>
                 <input type="text" class="form-control" id="Numero_input" required>
+                <!--
+                <div class="invalid-feedback">
+                    Campo obrigatório
+                </div>
+                -->
             </div>
             <div class="col-md-4">
                 <label for="Setor_input" class="form-label">Setor/Projeto</label>
@@ -86,8 +175,7 @@
             </div>
             <div class="col-md-6">
                 <label for="Autor_input" class="form-label">Autor</label>
-                <input type="text" class="form-control" id="Autor_input"
-                        aria-describedby="inputGroupPrepend" required>
+                <input type="text" class="form-control" id="Autor_input" aria-describedby="inputGroupPrepend" required>
             </div>
             <div class="col-md-5">
                 <label for="Data_input" class="form-label">Data criado</label>
@@ -98,21 +186,12 @@
                 <textarea type="text" class="form-control" id="Descricao_input" required></textarea>
             </div>
             <div class="col-12 mb-2">
-                <button class="btn btn-primary" type="submit">Cadastrar</button>
+                <button id="CadastrarSC" class="btn btn-primary" type="submit">Cadastrar</button>
+                <button id="ProcurarSC" class="btn btn-primary" type="submit">Procurar</button>
             </div>
         </form>
 
-        <div id="DivDados" class="row">
-            <div class="col card" style="max-width: 18rem; max-height: 22rem;">
-                <div id="Numero_SC" class="card-header">
-                    <h5>031289</h5>
-                </div>
-                <div class="card-body">
-                    <p id="Setor_SC" class="card-title">Eletrônica</p>
-                    <p id="Data_SC" class="card-text">16/02/2022</p>
-                    <p id="Descricao_SC" class="card-text">Cadeira para o Péricles</p>
-                </div>
-            </div>
+        <div id="DivDados" class="row" style="max-height: 100%;">
         </div>
     </div>
 
