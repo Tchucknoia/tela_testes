@@ -143,7 +143,7 @@ router.post("/procurar", async (req, res) => {
                 if(!bFirst){
                     bFirst = true;
                 } else{
-                    cComandoQuery += `OR `;
+                    cComandoQuery += `AND `;
                 }
                 cComandoQuery += `${mysqlColunas[colunas[i]]} LIKE "%${jDados[colunas[i]]}%" `;
             }
