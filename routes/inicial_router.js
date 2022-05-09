@@ -56,7 +56,7 @@ router.post('/logout', (req, res) => {
 router.post("/cadastrar", async (req, res) => {
     console.log(req.body);
     let jSend = {
-        "dados":null,
+        "dados": null,
         "cMensagemErro": null
     };
     let db;
@@ -122,11 +122,11 @@ router.post("/procurar", async (req, res) => {
     const query = util.promisify(db.query).bind(db);
     try {
         let mysqlColunas = {
-            "Numero_input" : "sc_number",
-            "Setor_input" : "sector",
-            "Autor_input" : "author",
-            "Data_input" : "created_data",
-            "Descricao_input" : "description"
+            "Numero_input": "sc_number",
+            "Setor_input": "sector",
+            "Autor_input": "author",
+            "Data_input": "created_data",
+            "Descricao_input": "description"
         };
         let colunas = [
             "Numero_input",
@@ -138,31 +138,31 @@ router.post("/procurar", async (req, res) => {
         let cComandoQuery = "SELECT * FROM solicitacoes_compra WHERE ";
         let jDados = req.body;
         let bFirst = false;
-        for(let i=0;i<colunas.length;i++){
-            if(jDados[colunas[i]] != ""){
-                if(!bFirst){
+        for (let i = 0; i < colunas.length; i++) {
+            if (jDados[colunas[i]] != "") {
+                if (!bFirst) {
                     bFirst = true;
-                } else{
+                } else {
                     cComandoQuery += `AND `;
                 }
                 cComandoQuery += `${mysqlColunas[colunas[i]]} LIKE "%${jDados[colunas[i]]}%" `;
             }
         }
-        if(!bFirst) cComandoQuery = "SELECT * FROM solicitacoes_compra";
+        if (!bFirst) cComandoQuery = "SELECT * FROM solicitacoes_compra";
 
         //console.log(cComandoQuery);
         let results = await query(cComandoQuery);
         let dados = [];
-        for(const row of results){
-            let a = row.created_data.slice(0,10);
+        for (const row of results) {
+            let a = row.created_data.slice(0, 10);
             let jTemp = {
-                "numero_SC" : row.sc_number,
-                "setor" : row.sector,
-                "autor" : row.author,
-                "data" : `${a.slice(8,10)}/${a.slice(5,7)}/${a.slice(0,4)}`,
-                "descricao" : row.description
+                "numero_SC": row.sc_number,
+                "setor": row.sector,
+                "autor": row.author,
+                "data": `${a.slice(8, 10)}/${a.slice(5, 7)}/${a.slice(0, 4)}`,
+                "descricao": row.description
             };
-            
+
             //console.log(jTemp);
             dados.push(jTemp)
         }
@@ -177,9 +177,53 @@ router.post("/procurar", async (req, res) => {
 
 });
 
-router.post("/recursos", (req,res) =>{
+router.post("/recursos", (req, res) => {
     let arquivo = req.body["arquivo"];
     res.sendFile(path.join(__dirname + `/html/Recursos_tela_inicial/${arquivo}.html`));
+});
+
+router.post("/enviarRelatorio", async (req, res) => {
+    let today = new Date();
+
+    let jDados = {
+        autor: req.session.email,
+        descricao: req.body["descricao"],
+        tipo: req.body["tipo"]
+    }
+
+    let jSend = {
+        "cMensagemErro": null
+    };
+    let db;
+
+    try {
+        db = await conectar();
+    } catch (err) {
+        if (err) {
+            if (err.code == "ECONNREFUSED") {
+                console.log("Servidor OFFLINE");
+                jSend.cMensagemErro = err.code;
+                res.send(jSend);
+                return;
+            } else {
+                throw err;
+            }
+        }
+    }
+    const query = util.promisify(db.query).bind(db);
+    try {
+        let data = new Date();
+        console.log(`jDados:${JSON.stringify(jDados)}`);
+        let stringData = `${data.getFullYear()}-${data.getMonth()}-${data.getDay()} ${data.getHours()}:${data.getMinutes()}:${data.getSeconds()}`;
+        let results = await query("INSERT INTO relatorios_bugs (`autor`, `descricao`, `data_criado`, `corrigido`, `tipo`) VALUES(?, ?, ?, 0, ?)", [jDados.autor, jDados.descricao, stringData, jDados.tipo]);
+        console.log(results);
+    } catch (err) {
+        jSend.cMensagemErro = `Erro no backend ${err.code}`;
+        return;
+    } finally {
+        db.end();
+        res.send(jSend);
+    }
 });
 
 module.exports = router;

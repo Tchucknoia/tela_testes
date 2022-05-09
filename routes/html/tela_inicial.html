@@ -152,7 +152,31 @@
                         `;
                         divDados.appendChild(card);
                     }
-
+                });
+            });
+            $("#EnviarRelatorio").click((event) => {
+                event.preventDefault();
+                let jDados = {
+                    descricao : $("#Descricao_input").val(),
+                    tipo : "bug"
+                }
+                if(jDados.descricao.length <= 20){
+                    alert("Descrição do relatorio tem que ter pelo mínimo 20 caracteres");
+                    return;
+                }
+                if(jDados.tipo === ""){
+                    alert("Tipo do relatorio errado");
+                    return;
+                }
+                $.ajax({
+                    url:currentLink + "/enviarRelatorio",
+                    type : "POST",
+                    contentType : "application/json",
+                    data : JSON.stringify(jDados)
+                }).done(res =>{
+                    if(res["cMensagemErro"]){
+                        alert(res["cMensagemErro"]);
+                    }
                 });
             });
         }

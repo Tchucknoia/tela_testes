@@ -11,7 +11,15 @@ app.use(session({
 	resave: true,
 	saveUninitialized: true
 }));
-
+app.all('*', (req,res,next) => {
+	console.log(`req.session:${JSON.stringify(req.session)}`);
+	if(!req.session.loggedin){
+		console.log("redirecionar");
+		res.redirect("/");
+		return;
+	}
+	next();
+});
 app.use('/', login_router);
 app.use('/tela_inicial', inicial_router);
 
