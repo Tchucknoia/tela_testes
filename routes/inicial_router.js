@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require("body-parser");
 const path = require('path');
 const util = require("util");
+const { route } = require('express/lib/application');
 const router = express.Router();
 
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -99,7 +100,6 @@ router.post("/cadastrar", async (req, res) => {
 });
 
 router.post("/procurar", async (req, res) => {
-    //console.log(req.body);
     let jSend = {
         "cMensagemErro": null
     };
@@ -175,6 +175,11 @@ router.post("/procurar", async (req, res) => {
         res.send(jSend);
     }
 
+});
+
+router.post("/recursos", (req,res) =>{
+    let arquivo = req.body["arquivo"];
+    res.sendFile(path.join(__dirname + `/html/Recursos_tela_inicial/${arquivo}.html`));
 });
 
 module.exports = router;

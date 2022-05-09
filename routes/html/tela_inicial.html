@@ -21,9 +21,46 @@
         crossorigin="anonymous"></script>
 
     <script>
-        $(document).ready(() => {
+        let currentLink = $(location).attr("href");
+        currentLink = currentLink.replace("#", "").replace("?", "");
 
-            // Example starter JavaScript for disabling form submissions if there are invalid fields
+        function requisitar(arquivo) {
+            //console.log(`LINK:${link}\ntypeof(link):${typeof(arquivo)}`);
+            $.ajax({
+                url: `${currentLink}/recursos`,
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ "arquivo": arquivo })
+            }).done(res => {
+                console.log(res);
+                document.getElementById("DivTela").innerHTML = res;
+                documentoPronto();
+            });
+        }
+
+        function limparDados() {
+            const div = document.getElementById("DivDados");
+            div.innerHTML = "";
+        }
+
+        function limparForm() {
+            const form = document.getElementById("FormCadastro");
+            for (const elemento of form.elements) {
+                elemento.value = "";
+            }
+            setarDefaults();
+        }
+
+        function setarDefaults() {
+            let today = new Date();
+            let dd = String(today.getDate()).padStart(2, '0');
+            let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+            let yyyy = today.getFullYear();
+
+            $("#Data_input").val(`${yyyy}-${mm}-${dd}`);
+        }
+        function documentoPronto() {
+            setarDefaults();
             (function () {
                 'use strict'
 
@@ -42,6 +79,7 @@
                         }, false)
                     })
             })();
+
             /*
             $("#Logout").click(() => {
                 //console.log("Click");
@@ -62,8 +100,6 @@
                     jDados[elemento.id] = elemento.value;
                 }
                 event.preventDefault();
-                let currentLink = $(location).attr("href");
-                currentLink = currentLink.replace("#", "").replace("?", "");
 
                 console.log(jDados);
                 $.ajax({
@@ -74,6 +110,9 @@
                 }).done(jRes => {
                     if (jRes["cMensagemErro"] != null) {
                         alert(jRes["cMensagemErro"]);
+                    } else {
+                        alert("Cadastrado com sucesso");
+                        limparLista();
                     }
                     console.log(jRes);
                 });
@@ -85,9 +124,6 @@
                 for (const elemento of form.elements) {
                     jDados[elemento.id] = elemento.value;
                 }
-                console.log(jDados);
-                let currentLink = $(location).attr("href");
-                currentLink = currentLink.replace("#", "").replace("?", "");
 
                 console.log(jDados);
                 $.ajax({
@@ -99,10 +135,11 @@
                     if (jRes["cMensagemErro"] != null) {
                         alert(jRes["cMensagemErro"]);
                     }
+                    let divDados = document.getElementById("DivDados");
+                    divDados.innerHTML = "";
                     console.log(jRes);
                     //console.log(jRes.dados]);
                     for (const jDados of jRes.dados) {
-                        let divDados = document.getElementById("DivDados");
                         let card = document.createElement("div");
                         card.className = "col card cardSCs";
                         card.innerHTML = `
@@ -118,6 +155,11 @@
 
                 });
             });
+        }
+        $(document).ready(() => {
+            // Example starter JavaScript for disabling form submissions if there are invalid fields
+            documentoPronto();
+            requisitar("Menu_inicial");
         });
     </script>
 
@@ -134,7 +176,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Menu inicial</a>
+            <a class="navbar-brand" href="#" onclick="requisitar('Menu_inicial')">Menu inicial</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -148,7 +190,8 @@
                             Recursos
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#" id="DropDownSCs">Solicitações de compras</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="requisitar('SCs')"
+                                    id="DropDownSCs">Solicitações de compras</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -158,43 +201,9 @@
             </div>
         </div>
     </nav>
-    <div class="container-fluid" style="margin-top: 1rem;">
-        <form id="FormCadastro" class="row g-3 needs-validation mb-4" novalidate style="max-width: 30rem;">
-            <div class="col-md-4">
-                <label for="Numero_input" class="form-label">Número da SC</label>
-                <input type="text" class="form-control" id="Numero_input" required>
-                <!--
-                <div class="invalid-feedback">
-                    Campo obrigatório
-                </div>
-                -->
-            </div>
-            <div class="col-md-4">
-                <label for="Setor_input" class="form-label">Setor/Projeto</label>
-                <input type="text" class="form-control" id="Setor_input" required>
-            </div>
-            <div class="col-md-6">
-                <label for="Autor_input" class="form-label">Autor</label>
-                <input type="text" class="form-control" id="Autor_input" aria-describedby="inputGroupPrepend" required>
-            </div>
-            <div class="col-md-5">
-                <label for="Data_input" class="form-label">Data criado</label>
-                <input type="date" class="form-control" id="Data_input" required>
-            </div>
-            <div class="col-mb-3">
-                <label for="Descricao_input" class="form-label">Descrição</label>
-                <textarea type="text" class="form-control" id="Descricao_input" required></textarea>
-            </div>
-            <div class="col-12 mb-2">
-                <button id="CadastrarSC" class="btn btn-primary" type="submit">Cadastrar</button>
-                <button id="ProcurarSC" class="btn btn-primary" type="submit">Procurar</button>
-            </div>
-        </form>
-
-        <div id="DivDados" class="row" style="max-height: 100%;">
-        </div>
+    <div id="DivTela">
+        
     </div>
-
 </body>
 
 </html>
