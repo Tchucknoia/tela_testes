@@ -31,11 +31,21 @@
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify({ "arquivo": arquivo })
-            }).done(res => {
-                console.log(res);
-                document.getElementById("DivTela").innerHTML = res;
+            }).done(jRes => {
+                //console.log(res);
+                if(redirecionar(jRes)) return;
+                document.getElementById("DivTela").innerHTML = jRes;
                 documentoPronto();
             });
+        }
+
+        function redirecionar(dados) {
+            if (dados["redirect"] != undefined) {
+                //console.log(`window.location:${window.location.href}`);
+                window.location.replace(window.location.href + dados["redirect"]);
+                return true;
+            }
+            return false;
         }
 
         function limparDados() {
@@ -80,15 +90,14 @@
                     })
             })();
 
-            /*
+            
             $("#Logout").click(() => {
-                //console.log("Click");
-                let currentLink = $(location).attr("href") + "/logout";
-                currentLink = currentLink.replace("#", "");
 
-                $.post(currentLink);
+                $.post(currentLink + "/logout").done(jRes => {
+                    redirecionar(jRes);
+                });
             });
-            */
+            
 
             $("#CadastrarSC").click((event) => {
                 let jDados = {};
@@ -108,6 +117,7 @@
                     contentType: "application/json",
                     data: JSON.stringify(jDados)
                 }).done(jRes => {
+                    if (redirecionar(jRes)) return;
                     if (jRes["cMensagemErro"] != null) {
                         alert(jRes["cMensagemErro"]);
                     } else {
@@ -132,6 +142,7 @@
                     contentType: "application/json",
                     data: JSON.stringify(jDados)
                 }).done(jRes => {
+                    if (redirecionar(jRes)) return;
                     if (jRes["cMensagemErro"] != null) {
                         alert(jRes["cMensagemErro"]);
                     }
@@ -157,25 +168,28 @@
             $("#EnviarRelatorio").click((event) => {
                 event.preventDefault();
                 let jDados = {
-                    descricao : $("#Descricao_input").val(),
-                    tipo : "bug"
+                    descricao: $("#Descricao_input").val(),
+                    tipo: $('input[type="radio"][name="radioTipo"]:checked').val()
                 }
-                if(jDados.descricao.length <= 20){
+                if (jDados.descricao.length <= 20) {
                     alert("Descrição do relatorio tem que ter pelo mínimo 20 caracteres");
                     return;
                 }
-                if(jDados.tipo === ""){
+                if (jDados.tipo === "") {
                     alert("Tipo do relatorio errado");
                     return;
                 }
                 $.ajax({
-                    url:currentLink + "/enviarRelatorio",
-                    type : "POST",
-                    contentType : "application/json",
-                    data : JSON.stringify(jDados)
-                }).done(res =>{
-                    if(res["cMensagemErro"]){
-                        alert(res["cMensagemErro"]);
+                    url: currentLink + "/enviarRelatorio",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(jDados)
+                }).done(jRes => {
+                    if (redirecionar(jRes)) return;
+                    if (jRes["cMensagemErro"]) {
+                        alert(jRes["cMensagemErro"]);
+                    } else{
+                        alert("Relatório enviado com sucesso");
                     }
                 });
             });
@@ -200,7 +214,8 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#" onclick="requisitar('Menu_inicial')">Menu inicial</a>
+            <button class="navbar-brand bg-light" style="border: 0; padding: 5px 0px;" href="#" onclick="requisitar('Menu_inicial')">Menu
+                inicial</button>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -214,19 +229,19 @@
                             Recursos
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#" onclick="requisitar('SCs')"
-                                    id="DropDownSCs">Solicitações de compras</a></li>
+                            <li><button class="dropdown-item" onclick="requisitar('SCs')" id="DropDownSCs">Solicitações
+                                    de compras</button></li>
                         </ul>
                     </li>
                 </ul>
                 <div class="nav navbar-expand-lg navbar-light bg-lightnavbar-right">
-                    <a id="Logout" href="#" class="navbar-brand">Logout</a>
+                    <button id="Logout" class="navbar-brand bg-light" style="border: 0;">Logout</button>
                 </div>
             </div>
         </div>
     </nav>
     <div id="DivTela">
-        
+
     </div>
 </body>
 

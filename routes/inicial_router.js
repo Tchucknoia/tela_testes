@@ -43,14 +43,10 @@ router.post('/view_SCs', (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-    /*
-    console.log("asd");
-    req.session.loggedin = false;
-    req.session.email = '';
-    let backURL = req.header('Referer') || '/';
-    console.log(`backURL:${backURL}`);
-    res.redirect("back");-
-    */
+    console.log("logout");
+    req.session.email = undefined;
+    req.session.loggedin = undefined;
+    res.send({"redirect" : "/"});
 });
 
 router.post("/cadastrar", async (req, res) => {
@@ -214,10 +210,12 @@ router.post("/enviarRelatorio", async (req, res) => {
     try {
         let data = new Date();
         console.log(`jDados:${JSON.stringify(jDados)}`);
-        let stringData = `${data.getFullYear()}-${data.getMonth()}-${data.getDay()} ${data.getHours()}:${data.getMinutes()}:${data.getSeconds()}`;
-        let results = await query("INSERT INTO relatorios_bugs (`autor`, `descricao`, `data_criado`, `corrigido`, `tipo`) VALUES(?, ?, ?, 0, ?)", [jDados.autor, jDados.descricao, stringData, jDados.tipo]);
+        let stringData = `${data.getFullYear()}-${data.getMonth()+1}-${data.getDate()} ${data.getHours()}:${data.getMinutes()}:${data.getSeconds()}`;
+        console.log(`Data:${stringData}`);
+        let results = await query("INSERT INTO relatorios (`autor`, `descricao`, `data_criado`, `corrigido`, `tipo`) VALUES(?, ?, ?, 0, ?)", [jDados.autor, jDados.descricao, stringData, jDados.tipo]);
         console.log(results);
     } catch (err) {
+        console.log(err);
         jSend.cMensagemErro = `Erro no backend ${err.code}`;
         return;
     } finally {
